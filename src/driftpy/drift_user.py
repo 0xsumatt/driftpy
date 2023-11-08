@@ -8,6 +8,7 @@ from driftpy.math.positions import *
 from driftpy.math.margin import *
 from driftpy.math.spot_market import *
 from driftpy.math.oracle import *
+from polling import Polling
 
 
 def find(l: list, f):
@@ -18,7 +19,7 @@ def find(l: list, f):
         return valid_values[0]
 
 
-class User:
+class User(Polling):
     """This class is the main way to retrieve and inspect data on Drift Protocol."""
 
     def __init__(
@@ -168,6 +169,20 @@ class User:
 
         user = await get_user_account(self.program, self.authority, self.subaccount_id)
         self.CACHE["user"] = user
+
+    async def poll_data(self):
+        """Polls the latest data and updates the cache."""
+        await self.set_cache()  
+
+    async def subscribe(self):
+        """Override subscribe to perform any additional setup before polling starts."""
+
+        await super().subscribe()
+
+    async def unsubscribe(self):
+        """Override unsubscribe to perform any additional teardown after polling stops."""
+        
+        await super().unsubscribe()
 
     async def get_spot_oracle_data(self, spot_market: SpotMarket):
         if self.use_cache:
